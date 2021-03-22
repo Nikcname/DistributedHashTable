@@ -115,61 +115,83 @@ public class Main {
         Map<Integer, List<Integer>> adjList = new HashMap<>();
         List<Integer> restList = new ArrayList<>();
 
-        for (int i = 0; i < nodes.length; i++){
+        for (int i = 0; i < nodes.length; i++) {
 
-            restList = new ArrayList<>();
+            if (nodes.length >= 3) {
 
-            breadthFirstIterator = new BreadthFirstIterator<>(directedGraph, nodes[i]);
-            
-            while (breadthFirstIterator.hasNext()){
+                restList = new ArrayList<>();
 
-                int nextNode = (int) breadthFirstIterator.next();
+                breadthFirstIterator = new BreadthFirstIterator<>(directedGraph, nodes[i]);
 
-                int nodeNum  = i;
+                while (breadthFirstIterator.hasNext()) {
 
-                if (i >= nodes.length - 2){
+                    int nextNode = (int) breadthFirstIterator.next();
 
-                    nodeNum = i % (nodes.length - 2);
+                    int nodeNum = i;
 
-                    if (nextNode == nodes[nodeNum]){
+                    if (i >= nodes.length - 2) {
+
+                        nodeNum = i % (nodes.length - 2);
+
+                        if (nextNode == nodes[nodeNum]) {
+                            break;
+                        }
+
+                        restList.add(nextNode);
+                        continue;
+
+                    } else if (nextNode == nodes[nodeNum + 2]) {
                         break;
                     }
 
                     restList.add(nextNode);
-                    continue;
 
-                } else if (nextNode == nodes[nodeNum + 2]){
-                    break;
                 }
 
-                restList.add(nextNode);
+                if (i >= nodes.length - 2) {
+
+                    restList.add(nodes[i % (nodes.length - 2)]);
+                } else {
+                    restList.add(nodes[i + 2]);
+                }
+
+                adjList.put(nodes[i], restList);
 
             }
-
-            if (i >= nodes.length - 2){
-
-                restList.add(nodes[i % (nodes.length - 2)]);
-            } else {
-                restList.add(nodes[i + 2]);
-            }
-
-            adjList.put(nodes[i], restList);
-
         }
-
         for (int i = 0; i < nodes.length; i++){
 
-            System.out.print(nodes[i] + ":");
-            if (adjList.get(nodes[i]).size() > 3){
-                for (int j = 2; j < adjList.get(nodes[i]).size() - 1; j++){
-                    System.out.print( adjList.get(nodes[i]).get(j) + ", " );
+            if (nodes.length >= 3) {
+
+                System.out.print(nodes[i] + ":");
+                if (adjList.get(nodes[i]).size() > 3) {
+                    for (int j = 2; j < adjList.get(nodes[i]).size() - 1; j++) {
+                        System.out.print(adjList.get(nodes[i]).get(j) + ", ");
+                    }
+                } else {
+                    System.out.print(", ");
                 }
-            } else {
-                System.out.print(", " );
+                System.out.print("S-" + adjList.get(nodes[i]).get(1) + ", ");
+
+                if (nodes.length == 3 && i == nodes.length - 1) {
+                    System.out.print("NS-" + nodes[1]);
+                } else {
+                    System.out.print("NS-" + adjList.get(nodes[i]).get(adjList.get(nodes[i]).size() - 1));
+                }
+                System.out.println();
             }
-            System.out.print("S-" + adjList.get(nodes[i]).get(1) + ", ");
-            System.out.print("NS-" + adjList.get(nodes[i]).get(adjList.get(nodes[i]).size() - 1));
-            System.out.println();
+
+            if (nodes.length == 2){
+                System.out.println(nodes[0] + ":, " + "S-" + nodes[1] + ", NS-" + nodes[0] );
+                System.out.println(nodes[1] + ":, " + "S-" + nodes[0] + ", NS-" + nodes[1] );
+                break;
+            }
+
+            if (nodes.length == 1){
+                System.out.println(nodes[0] + ":, " + "S-" + nodes[0] + ", NS-" + nodes[0] );
+                break;
+            }
+
         }
 
     }
