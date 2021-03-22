@@ -121,7 +121,7 @@ public class Main {
                         Integer.parseInt(startEnd[0]);
                         Integer.parseInt(startEnd[1]);
 
-                        directedGraph = addEdjeToGraph(Integer.parseInt(startEnd[0]), Integer.parseInt(startEnd[1]));
+                        directedGraph = addEdgeToGraph(Integer.parseInt(startEnd[0]), Integer.parseInt(startEnd[1]));
                     } catch (Exception e){
                         System.out.println("Wrong input");
                     }
@@ -136,8 +136,12 @@ public class Main {
 
                     for (String w: words){
 
-                        int deleteNode = Integer.parseInt(w);
-                        directedGraph = deleteGraph(deleteNode);
+                        try {
+                            int deleteNode = Integer.parseInt(w);
+                            directedGraph = deleteGraph(deleteNode);
+                        } catch (Exception e){
+
+                        }
 
                     }
 
@@ -224,25 +228,31 @@ public class Main {
 
             if (nodes.length >= 3) {
 
+                boolean smtPrinted = false;
                 System.out.print(nodes[i] + ":");
 //                System.out.print(Arrays.asList(adjList.get(nodes[i])));
                 if (adjList.get(nodes[i]).size() > 3) {
                     for (int j = 2; j <= adjList.get(nodes[i]).size() - 2; j++) {
                         System.out.print(adjList.get(nodes[i]).get(j) + ", ");
+                        smtPrinted = true;
                     }
-                } else {
-                    System.out.print(", ");
                 }
 //
                 String lookForSpecialShortcut1 = nodes[i] + ":" + adjList.get(nodes[i]).get(adjList.get(nodes[i]).size() - 1);
-                String lookForSpecialShortcut2 = adjList.get(nodes[i]).get(adjList.get(nodes[i]).size() - 1) + ":" + nodes[i];
+//                String lookForSpecialShortcut2 = adjList.get(nodes[i]).get(adjList.get(nodes[i]).size() - 1) + ":" + nodes[i];
 
                 for (String s : shortcutsStr){
 
-                    if (s.equals(lookForSpecialShortcut1) || s.equals(lookForSpecialShortcut2)){
+                    if (s.equals(lookForSpecialShortcut1)){
                         System.out.print(adjList.get(nodes[i]).get(adjList.get(nodes[i]).size() - 1) + ", ");
+                        smtPrinted = true;
                     }
                 }
+
+                if (!smtPrinted){
+                    System.out.print(", ");
+                }
+
 ////
                 System.out.print("S-" + adjList.get(nodes[i]).get(0) + ", ");
 
@@ -452,7 +462,7 @@ public class Main {
         return a;
     }
 
-    public static DirectedGraph addEdjeToGraph(int start, int end){
+    public static DirectedGraph addEdgeToGraph(int start, int end){
 
         DirectedGraph<Integer, DefaultEdge> directedGraph
                 = new DefaultDirectedGraph<>(DefaultEdge.class);
@@ -469,9 +479,6 @@ public class Main {
         if (directedGraph.containsEdge(start, end)){
             System.out.println("The node is successor or shortcut, shortcut not added.");
         } else if (directedGraph.containsVertex(start) && directedGraph.containsVertex(end)){
-            if (nodes.length <= 3){
-                System.out.println("Can not add shortcut. Only: " + nodes.length + " nodes.");
-            } else {
 
                 boolean add = true;
                 for (String s : shortcutsStr){
@@ -488,7 +495,7 @@ public class Main {
                     System.out.println("Shortcut exist. No shortcut added");
                 }
 
-            }
+
         } else if (!directedGraph.containsVertex(start)){
             System.out.println("Node " + start + " not exist, shortcut not added." );
         } else if (!directedGraph.containsVertex(end)){
