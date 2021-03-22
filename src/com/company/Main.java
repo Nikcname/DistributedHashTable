@@ -1,15 +1,9 @@
 package com.company;
 
 import org.jgrapht.DirectedGraph;
-import org.jgrapht.Graph;
 import org.jgrapht.alg.shortestpath.AllDirectedPaths;
-import org.jgrapht.alg.shortestpath.BellmanFordShortestPath;
-import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
 import org.jgrapht.graph.*;
 import org.jgrapht.traverse.BreadthFirstIterator;
-import org.jgrapht.traverse.DepthFirstIterator;
-
-import javax.sound.midi.Soundbank;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -75,29 +69,80 @@ public class Main {
                         keyAndNode = new String[]{ words[1], String.valueOf(nodes[0])};
                     }
 
-                    printLookupGraph(directedGraph, Integer.parseInt(keyAndNode[0]), Integer.parseInt(keyAndNode[1]));
+                    try {
+                        Integer.parseInt(keyAndNode[0]);
+                        Integer.parseInt(keyAndNode[1]);
+                        printLookupGraph(directedGraph, Integer.parseInt(keyAndNode[0]), Integer.parseInt(keyAndNode[1]));
+                    } catch (Exception e){
+                        System.out.println("Wrong input");
+                    }
 
                 } else if (line.contains("Join")){
 
                     String[] words = line.split(" ");
-                    int newNode = Integer.parseInt(words[1]);
 
-                    directedGraph = createNewGraph(newNode);
+                    try {
+                        int newNode = Integer.parseInt(words[1]);
+
+                        if (newNode >= keysSpace[0] && newNode <= keysSpace[1]){
+                            directedGraph = createNewGraph(newNode);
+                        } else {
+                            System.out.println("Node " +newNode +" can not be added. Key space "+ keysSpace[0] + "-" + keysSpace[1]);
+                        }
+                    } catch (Exception e){
+                        System.out.println("Wrong input");
+                    }
+
 
                 } else if (line.contains("Leave")){
 
                     String[] words = line.split(" ");
-                    int deleteNode = Integer.parseInt(words[1]);
 
-                    directedGraph = deleteGraph(deleteNode);
+                    if (nodes.length == 1){
+                        System.out.println("Can not delete last node.");
+                    } else {
+                        try {
+                            int deleteNode = Integer.parseInt(words[1]);
+
+                            directedGraph = deleteGraph(deleteNode);
+                        } catch (Exception e){
+                            System.out.println("Wrong input");
+                        }
+                    }
+
 
                 } else if (line.contains("Shortcut")){
 
                     String[] words = line.split(" ");
                     String[] startEnd = words[1].split(":");
 
-                    directedGraph = addEdjeToGraph(Integer.parseInt(startEnd[0]), Integer.parseInt(startEnd[1]));
+                    try {
 
+                        Integer.parseInt(startEnd[0]);
+                        Integer.parseInt(startEnd[1]);
+
+                        directedGraph = addEdjeToGraph(Integer.parseInt(startEnd[0]), Integer.parseInt(startEnd[1]));
+                    } catch (Exception e){
+                        System.out.println("Wrong input");
+                    }
+
+                } else if (line.contains("Remove")){
+
+                    String[] words = line.split(" ");
+
+                    for (int i = 1; i < words.length; i++){
+                        words[i] = words[i].replaceAll(",", "" );
+                    }
+
+                    for (String w: words){
+
+                        int deleteNode = Integer.parseInt(w);
+                        directedGraph = deleteGraph(deleteNode);
+
+                    }
+
+                } else {
+                    System.out.println("Commands are: List, Lookup int, Lookup int:int, Join int, Leave int, Shortcut int:int, Remove int...");
                 }
 
             }
@@ -120,40 +165,56 @@ public class Main {
             if (nodes.length >= 3) {
 
                 restList = new ArrayList<>();
+                boolean firstTime = true;
 
                 breadthFirstIterator = new BreadthFirstIterator<>(directedGraph, nodes[i]);
-
+//                System.out.println(directedGraph);
                 while (breadthFirstIterator.hasNext()) {
 
                     int nextNode = (int) breadthFirstIterator.next();
 
-                    int nodeNum = i;
+                    if (directedGraph.containsEdge(nodes[i], nextNode)){
+                        restList.add(nextNode);
 
-                    if (i >= nodes.length - 2) {
+                        if(firstTime){
+                            BreadthFirstIterator breadthFirstIterator2 = new BreadthFirstIterator<>(directedGraph, restList.get(0));
 
-                        nodeNum = i % (nodes.length - 2);
+                            breadthFirstIterator2.next();
+                            restList.add((int) breadthFirstIterator2.next());
 
-                        if (nextNode == nodes[nodeNum]) {
-                            break;
+                            firstTime = false;
                         }
 
-                        restList.add(nextNode);
-                        continue;
-
-                    } else if (nextNode == nodes[nodeNum + 2]) {
-                        break;
                     }
 
-                    restList.add(nextNode);
+
+//                    int nodeNum = i;
+//                    System.out.print(nextNode + "/");
+//                    if (i >= nodes.length - 2) {
+//
+//                        nodeNum = i % (nodes.length - 2);
+//
+//                        if (nextNode == nodes[nodeNum]) {
+//                            break;
+//                        }
+//
+//                        restList.add(nextNode);
+//                        continue;
+//
+//                    } else if (nextNode == nodes[nodeNum + 2]) {
+////                        break;
+//                    }
+//
+//                    restList.add(nextNode);
 
                 }
-
-                if (i >= nodes.length - 2) {
-
-                    restList.add(nodes[i % (nodes.length - 2)]);
-                } else {
-                    restList.add(nodes[i + 2]);
-                }
+//
+//                if (i >= nodes.length - 2) {
+//
+//                    restList.add(nodes[i % (nodes.length - 2)]);
+//                } else {
+//                    restList.add(nodes[i + 2]);
+//                }
 
                 adjList.put(nodes[i], restList);
 
@@ -164,19 +225,31 @@ public class Main {
             if (nodes.length >= 3) {
 
                 System.out.print(nodes[i] + ":");
+//                System.out.print(Arrays.asList(adjList.get(nodes[i])));
                 if (adjList.get(nodes[i]).size() > 3) {
-                    for (int j = 2; j < adjList.get(nodes[i]).size() - 1; j++) {
+                    for (int j = 2; j <= adjList.get(nodes[i]).size() - 2; j++) {
                         System.out.print(adjList.get(nodes[i]).get(j) + ", ");
                     }
                 } else {
                     System.out.print(", ");
                 }
-                System.out.print("S-" + adjList.get(nodes[i]).get(1) + ", ");
+//
+                String lookForSpecialShortcut1 = nodes[i] + ":" + adjList.get(nodes[i]).get(adjList.get(nodes[i]).size() - 1);
+                String lookForSpecialShortcut2 = adjList.get(nodes[i]).get(adjList.get(nodes[i]).size() - 1) + ":" + nodes[i];
+
+                for (String s : shortcutsStr){
+
+                    if (s.equals(lookForSpecialShortcut1) || s.equals(lookForSpecialShortcut2)){
+                        System.out.print(adjList.get(nodes[i]).get(adjList.get(nodes[i]).size() - 1) + ", ");
+                    }
+                }
+////
+                System.out.print("S-" + adjList.get(nodes[i]).get(0) + ", ");
 
                 if (nodes.length == 3 && i == nodes.length - 1) {
                     System.out.print("NS-" + nodes[1]);
                 } else {
-                    System.out.print("NS-" + adjList.get(nodes[i]).get(adjList.get(nodes[i]).size() - 1));
+                    System.out.print("NS-" + adjList.get(nodes[i]).get(1));
                 }
                 System.out.println();
             }
@@ -214,8 +287,6 @@ public class Main {
         int lookupNum;
 
         for (Object path : shortestPath){
-
-            System.out.println(path);
 
             Pattern pattern = Pattern.compile("[^,]*,");
             Matcher matcher = pattern.matcher(path.toString());
@@ -292,18 +363,41 @@ public class Main {
                 nodes = deleteElement(nodes, deleteNode);
                 Arrays.sort(nodes);
 
-                List<Integer> deleteList = new ArrayList<>();
+                List<String> deleteList = new ArrayList<>();
+
                 for (int j = 0; j < shortcutsStr.length; j++){
                     if (shortcutsStr[j].contains(String.valueOf(deleteNode))){
-                        deleteList.add(j);
+
+                        String[] startEnd = shortcutsStr[j].split(":");
+                        int a = Integer.parseInt(startEnd[0]);
+                        int b =Integer.parseInt(startEnd[1]);
+
+                        if (a == deleteNode || b == deleteNode){
+
+                            deleteList.add(shortcutsStr[j]);
+
+                        }
                     }
                 }
 
+                List<String> tempStr = new ArrayList<>(Arrays.asList(shortcutsStr));
+                for (String s : deleteList){
+
+                    tempStr.remove(s);
+
+                }
+
+                shortcutsStr = new String[tempStr.size()];
+                tempStr.toArray(shortcutsStr);
 
                 System.out.println("Node " + deleteNode + " deleted.");
                 exitFlag = true;
             }
         }
+
+//        shortcutsStr[shortcutsStr.length - 1] = start + ":" + end;
+//        shortcutsStr = Arrays.copyOf(shortcutsStr, shortcutsStr.length - 1);
+/////////////
 
         if (!exitFlag){
             System.out.println("Node does not exist.");
@@ -372,6 +466,35 @@ public class Main {
         }
         directedGraph.addEdge(nodes[nodes.length - 1], nodes[0]);
 
+        if (directedGraph.containsEdge(start, end)){
+            System.out.println("The node is successor or shortcut, shortcut not added.");
+        } else if (directedGraph.containsVertex(start) && directedGraph.containsVertex(end)){
+            if (nodes.length <= 3){
+                System.out.println("Can not add shortcut. Only: " + nodes.length + " nodes.");
+            } else {
+
+                boolean add = true;
+                for (String s : shortcutsStr){
+                    if (s.equals(start + ":" + end)){
+                        add = false;
+                    }
+                }
+
+                if (add){
+                    shortcutsStr = Arrays.copyOf(shortcutsStr, shortcutsStr.length + 1);
+                    shortcutsStr[shortcutsStr.length - 1] = start + ":" + end;
+
+                } else {
+                    System.out.println("Shortcut exist. No shortcut added");
+                }
+
+            }
+        } else if (!directedGraph.containsVertex(start)){
+            System.out.println("Node " + start + " not exist, shortcut not added." );
+        } else if (!directedGraph.containsVertex(end)){
+            System.out.println("Node " + end + " not exist, shortcut not added." );
+        }
+
         for (String s : shortcutsStr){
 
             int srcNode = Integer.parseInt(s.split(":")[0]);
@@ -381,14 +504,6 @@ public class Main {
                 directedGraph.addEdge(srcNode, desNode);
             }
 
-        }
-
-        if (directedGraph.containsVertex(start) && directedGraph.containsVertex(end)){
-            directedGraph.addEdge(start, end);
-        } else if (!directedGraph.containsVertex(start)){
-            System.out.println("Node " + start + " not exist, shortcut not added." );
-        } else if (!directedGraph.containsVertex(end)){
-            System.out.println("Node " + end + " not exist, shortcut not added." );
         }
 
         return directedGraph;
