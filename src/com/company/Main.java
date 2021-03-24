@@ -16,8 +16,8 @@ public class Main {
 
     public static void main(String[] args) {
 
-        Parser parser = new Parser("/home/farrukh/IdeaProjects/DisHashTable/Input-file.txt");
-//        Parser parser = new Parser(args[0]);
+//        Parser parser = new Parser("/home/farrukh/IdeaProjects/DisHashTable/Input-file.txt");
+        Parser parser = new Parser(args[0]);
 
         keysSpace = parser.getKeySpace();
         nodes = parser.getNodes();
